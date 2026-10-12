@@ -17,13 +17,15 @@
       "name": "linux-ninja",
       "displayName": "Linux Ninja",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/linux-ninja"
+      "binaryDir": "${sourceDir}/build/linux-ninja",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
     }
   ],
   "buildPresets": [
     {
       "name": "windows-vs2022-x64",
-      "configurePreset": "windows-vs2022-x64"
+      "configurePreset": "windows-vs2022-x64",
+      "configuration": "Release"
     },
     {
       "name": "linux-ninja",
@@ -34,6 +36,7 @@
     {
       "name": "windows-vs2022-x64",
       "configurePreset": "windows-vs2022-x64",
+      "configuration": "Release",
       "output": { "outputOnFailure": true }
     },
     {

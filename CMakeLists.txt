@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.25)
 
 project(opr2 VERSION 0.1.0 LANGUAGES CXX)
 
+# The initial Windows package does not require a separately installed MSVC CRT.
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
 option(OPR2_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
 
 add_library(opr2_core

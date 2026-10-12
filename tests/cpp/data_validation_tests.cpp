@@ -102,6 +102,7 @@ int main() {
         const auto target = temporary.path() / "target.cpr";
         write_archive(target);
         std::error_code ec;
+        std::filesystem::remove(temporary.path() / kArchives[0]);
         std::filesystem::create_symlink(target, temporary.path() / kArchives[0], ec);
         if (!ec) {
             const auto result = opr2::validate_data_directory(temporary.path());
