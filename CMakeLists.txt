@@ -47,6 +47,11 @@ if(BUILD_TESTING)
     endif()
     add_test(NAME opr2_cpp_tests COMMAND opr2_tests)
     add_test(NAME opr2_help COMMAND opr2 --help)
+    add_test(NAME opr2_cli_tests
+        COMMAND ${CMAKE_COMMAND}
+            -DOPR2_EXECUTABLE=$<TARGET_FILE:opr2>
+            -DEXPECTED_VERSION=${PROJECT_VERSION}
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/cli/cli_test.cmake)
 endif()
 
 install(TARGETS opr2 RUNTIME DESTINATION .)
