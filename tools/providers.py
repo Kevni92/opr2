@@ -46,7 +46,8 @@ def build_command(settings: dict[str, Any], model: str, role: str,
                 raise ValueError("windows_sandbox must select a supported bounded Windows sandbox")
             extra += ["-c", "windows.sandbox=" + _toml(windows_sandbox)]
         if rea:
-            server = {**rea["server"], "enabled_tools": rea_tools,
+            server = {**rea["server"], "enabled": True, "required": True,
+                      "enabled_tools": rea_tools, "default_tools_approval_mode": "auto",
                       "startup_timeout_sec": 60, "tool_timeout_sec": 300}
             extra += ["-c", "mcp_servers.rea=" + _toml(server)]
         return command + ["--ask-for-approval", "never", "exec", "--ephemeral", "--ignore-user-config",

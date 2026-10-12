@@ -78,6 +78,9 @@ class ProviderTests(unittest.TestCase):
         self.assertNotIn('"command"=', override)
         config = tomllib.loads(override)["mcp_servers"]["rea"]
         self.assertEqual(config["env"]["JAVA_HOME"], "C:\\Java")
+        self.assertTrue(config["enabled"])
+        self.assertTrue(config["required"])
+        self.assertEqual(config["default_tools_approval_mode"], "auto")
         self.assertEqual(config["enabled_tools"], context["tools"])
         self.assertIn("--ignore-user-config", codex)
         claude = build_command({"kind": "claude", "command": ["claude"]}, "chosen", "reviewer",
