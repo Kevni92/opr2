@@ -18,7 +18,7 @@ jobs:
       matrix:
         include:
           - name: windows-msvc
-            os: windows-latest
+            os: windows-2022
             generator: Visual Studio 17 2022
             sanitizer: false
           - name: ubuntu-gcc

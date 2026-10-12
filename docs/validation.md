@@ -64,9 +64,14 @@ Build-Ausgaben liegen getrennt vom Paketverzeichnis.
 
 Der Workflow läuft bei Push auf `main`, Pull Request, `workflow_dispatch` und
 `merge_group`. Feature-Branch-Pushes erzeugen keinen zusaetzlichen Status auf
-dem Pull-Request-Head. Er baut mit Visual Studio 2022 auf Windows sowie mit Ninja und
+dem Pull-Request-Head. Er baut mit Visual Studio 2022 auf `windows-2022` sowie mit Ninja und
 GCC auf Ubuntu. Ein zusätzlicher Ubuntu-Lauf verwendet Clang mit AddressSanitizer
 und UndefinedBehaviorSanitizer. Python 3.11 führt die Validierung aus.
+
+Der Windows-Runner ist ausdrücklich gewählt, weil `windows-latest` inzwischen
+Visual Studio 2026 verwendet. Die Zuordnung ist in der
+[GitHub-Runner-Ankündigung](https://github.com/actions/runner-images/issues/14017)
+dokumentiert; lokale VS-2022-Presets bleiben damit auch in CI überprüfbar.
 
 Für automatischen Merge muss die Branch-Protection auf GitHub für `main`
 required status checks mit `strict: true` verlangen und `validation-required`
