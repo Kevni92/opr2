@@ -74,6 +74,8 @@ class ProviderTests(unittest.TestCase):
         codex = build_command({"kind": "codex", "command": ["codex"]}, "chosen", "worker",
                               self.root, self.schema, self.root / "result.json", rea=context)
         override = next(arg for arg in codex if arg.startswith("mcp_servers.rea="))
+        self.assertIn('mcp_servers.rea={ command = "rea"', override)
+        self.assertNotIn('"command"=', override)
         config = tomllib.loads(override)["mcp_servers"]["rea"]
         self.assertEqual(config["env"]["JAVA_HOME"], "C:\\Java")
         self.assertEqual(config["enabled_tools"], context["tools"])
