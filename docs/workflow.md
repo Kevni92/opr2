@@ -87,10 +87,10 @@ neuen Stand erneut geprüft und validiert wurde.
 die automatische Branch-Protection-/Merge-Prüfung. Ein Resume-Befehl wird
 aktuell nicht unterstuetzt. Automerge verlangt unabhängiges Review, erfolgreiche
 lokale Validierung einschliesslich Tests, erforderliche Originaldaten-Nachweise,
-grüne CI und unveränderte Head- und Base-Commits. Auf diesem
-Entwicklungsrechner blockiert Windows AppControl derzeit den vollständigen
-lokalen CTest-Lauf. Diese Schutzrichtlinie niemals umgehen; ohne erfolgreiche
-lokale Tests kein Automerge. CI allein ersetzt den lokalen Nachweis nicht.
+grüne CI und unveränderte Head- und Base-Commits. Der aktuelle Windows-Build
+mit statischer MSVC-Laufzeit besteht die lokalen C++-Tests. Blockiert Windows
+AppControl einen künftigen Build, diese Schutzrichtlinie niemals umgehen;
+ohne erfolgreiche lokale Tests kein Automerge. CI ersetzt den lokalen Nachweis nicht.
 
 ## Rollen und Grenzen
 

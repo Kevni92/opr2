@@ -114,12 +114,11 @@ Eintrags:
    richtet den Schutz ein; der Runner prüft ihn vor und nach dem PR-Lauf. Die
    PR-Basis muss weiterhin dem zuvor gelesenen `baseRefOid` entsprechen.
 
-Auf diesem Entwicklungsrechner verhindert Windows AppControl aktuell den
-vollständigen lokalen CTest-Lauf. Umgehe diese Schutzrichtlinie niemals; solange
-lokale Tests nicht erfolgreich laufen, darf kein Automerge stattfinden. Auf
-anderen Rechnern gilt derselbe Nachweis: CI ersetzt die erfolgreiche lokale
-Validierung nicht. `--no-merge` lässt den Pull Request offen; ein Resume-Befehl
-ist derzeit nicht vorhanden.
+Der aktuelle Windows-Build mit statischer MSVC-Laufzeit besteht die lokalen
+C++-Tests. Wenn Windows AppControl einen künftigen Build blockiert, darf diese
+Schutzrichtlinie nicht umgangen werden; ohne erfolgreiche lokale Tests kein
+Automerge. CI ersetzt die erfolgreiche lokale Validierung nicht. `--no-merge`
+lässt den Pull Request offen; ein Resume-Befehl ist derzeit nicht vorhanden.
 
 ## Lokale Hooks
 
