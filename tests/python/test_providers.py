@@ -81,6 +81,8 @@ class ProviderTests(unittest.TestCase):
         self.assertTrue(config["enabled"])
         self.assertTrue(config["required"])
         self.assertEqual(config["default_tools_approval_mode"], "approve")
+        self.assertEqual(config["startup_timeout_sec"], 60)
+        self.assertEqual(config["tool_timeout_sec"], 420)
         self.assertEqual(config["enabled_tools"], context["tools"])
         self.assertIn("--ignore-user-config", codex)
         claude = build_command({"kind": "claude", "command": ["claude"]}, "chosen", "reviewer",
