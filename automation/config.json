@@ -12,7 +12,7 @@
     "codex": {
       "kind": "codex",
       "command": ["codex"],
-      "models": {"worker": "gpt-6-luna", "reviewer": "gpt-6.1-sol"}
+      "models": {"worker": "gpt-6-luna", "reviewer": "gpt-6-luna"}
     },
     "claude": {
       "kind": "claude",

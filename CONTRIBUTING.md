@@ -70,8 +70,12 @@ und Modelle lassen sich je Rolle wählen:
 
 ```text
 python tools/orchestrator.py plan --issue N --config local/orchestrator.json
-python tools/orchestrator.py run --issue N --config local/orchestrator.json --provider claude --model sonnet --review-provider codex --review-model gpt-6.1-sol
+python tools/orchestrator.py run --issue N --config local/orchestrator.json --provider claude --model sonnet --review-provider codex --review-model gpt-6-luna
 ```
+
+Codex verwendet standardmäßig Luna für Koordination, Worker und den separaten
+Reviewer. Der Runner ist ein Python-Programm; es läuft kein zusätzliches
+teures Koordinatormodell. Größere Modelle werden nur ausdrücklich ausgewählt.
 
 Der Codex-Adapter benötigt eine CLI mit benannten Berechtigungsprofilen. Er
 setzt für Worker `:workspace`, für Reviewer `:read-only` und übernimmt kein

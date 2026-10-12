@@ -25,8 +25,10 @@ These rules apply to every contributor and every AI provider. Read
 - REA analysis tasks explicitly request `capabilities: ["rea"]`. Read
   `docs/rea-workflow.md`; use the fresh manifest-bound target, static tools only,
   and the absolute private analysis output path supplied by the orchestrator.
-- Provider and model are configuration choices. Simple Codex tasks default to
-  GPT-6 Luna; Claude Code and other adapters follow the same task contract.
+- Provider and model are configuration choices. Codex coordination, workers and
+  separate reviewers default to GPT-6 Luna. Do not switch to a more expensive
+  model without the user's explicit choice. Claude Code and other adapters
+  follow the same task contract; a provider failure never triggers a fallback.
 - A separate reviewer must approve the current commit. Merge requires the
   current commit's successful CI, local validation and original-data integrity
   evidence when applicable. Failed or stale evidence blocks integration.

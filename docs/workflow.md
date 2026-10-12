@@ -63,7 +63,7 @@ python tools/orchestrator.py run --issue 6 --config local/orchestrator.json
 Worker und Reviewer lassen sich unabhängig konfigurieren:
 
 ```text
-python tools/orchestrator.py run --issue 6 --config local/orchestrator.json --provider claude --model sonnet --review-provider codex --review-model gpt-6.1-sol
+python tools/orchestrator.py run --issue 6 --config local/orchestrator.json --provider claude --model sonnet --review-provider codex --review-model gpt-6-luna
 ```
 
 Der Worker aendert die freigegebenen Dateien und gibt seinen Diff zurueck. Der
