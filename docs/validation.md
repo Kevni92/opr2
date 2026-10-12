@@ -12,6 +12,12 @@ Führe aus dem Repository-Root aus:
 python tools/validate.py --build-dir build/validation
 ```
 
+Verhindert die lokale Anwendungssteuerung den Start eines gebauten Tests, ist
+die Validierung fehlgeschlagen, auch wenn Build und GitHub Actions erfolgreich
+sind. Der Orchestrator blockiert dann den Merge. Auf dem aktuellen
+Entwicklerrechner wurde eine solche Blockade für `opr2_tests.exe` beobachtet;
+die Host-Richtlinie wird durch den Workflow nicht verändert oder umgangen.
+
 Vor jedem Orchestrator-Lauf muss ein lokales Manifest vorhanden sein, wenn
 `pr2/` im Repository liegt. Es wird auch dann benötigt, wenn die Aufgabe keine
 Originaldaten verwendet:
