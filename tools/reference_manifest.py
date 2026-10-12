@@ -142,7 +142,9 @@ def main(argv: list[str] | None = None) -> int:
             output.parent.mkdir(parents=True, exist_ok=True)
             # Recheck after directory creation in case a parent was a junction.
             _check_output_separate(root, output)
-            output.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+            # A baseline is evidence, never something a routine retry replaces.
+            with output.open("x", encoding="utf-8") as stream:
+                stream.write(json.dumps(result, indent=2) + "\n")
             print(f"manifest written: {output}")
             return 0
         manifest = json.loads(args.manifest.read_text(encoding="utf-8"))

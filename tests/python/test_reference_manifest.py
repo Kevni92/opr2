@@ -49,6 +49,15 @@ class ReferenceManifestTests(unittest.TestCase):
         (self.source / "readme.txt").write_text("changed", encoding="utf-8")
         self.assertEqual(main(["verify", "--root", str(self.source), "--manifest", str(output)]), 1)
 
+    def test_create_does_not_replace_existing_baseline(self):
+        output = self.base / "manifest.json"
+        args = ["create", "--root", str(self.source), "--output", str(output)]
+        self.assertEqual(main(args), 0)
+        saved = output.read_bytes()
+        (self.source / "readme.txt").write_text("changed", encoding="utf-8")
+        self.assertEqual(main(args), 2)
+        self.assertEqual(output.read_bytes(), saved)
+
     def test_rejects_symlink_in_source_when_supported(self):
         target = self.source / "readme.txt"
         link = self.source / "link.txt"

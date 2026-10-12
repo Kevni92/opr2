@@ -1,4 +1,6 @@
 import os
+import hashlib
+import json
 import subprocess
 import tempfile
 import unittest
@@ -86,6 +88,43 @@ class AssetGuardTests(unittest.TestCase):
         self.git("commit", "-qm", "delete synthetic file")
         errors = check_repository(self.repo, history=True)
         self.assertTrue(any("pr2/alias.txt" in error and "reachable history" in error for error in errors))
+
+    def test_local_reference_hash_catches_allowed_text_path_in_index_and_working_tree(self):
+        payload = b"[synthetic]\nname=original-reference-text\n"
+        digest = hashlib.sha256(payload).hexdigest()
+        (self.repo / "safe.txt").write_bytes(payload)
+        self.git("add", "safe.txt")
+        errors = check_repository(self.repo, reference_hashes={digest})
+        self.assertTrue(any("safe.txt" in error and "index blob" in error for error in errors))
+        self.assertTrue(any("safe.txt" in error and "working file" in error for error in errors))
+        self.assertFalse(any(digest in error for error in errors))
+
+    def test_local_reference_hash_catches_deleted_historical_text(self):
+        payload = b"[synthetic]\nname=original-reference-text\n"
+        digest = hashlib.sha256(payload).hexdigest()
+        (self.repo / "safe.txt").write_bytes(payload)
+        self.git("add", "safe.txt")
+        self.git("commit", "-qm", "add synthetic reference-like text")
+        (self.repo / "safe.txt").unlink()
+        self.git("add", "-u")
+        self.git("commit", "-qm", "remove synthetic reference-like text")
+        errors = check_repository(self.repo, history=True, reference_hashes={digest})
+        self.assertTrue(any("safe.txt" in error and "reachable history" in error for error in errors))
+        self.assertFalse(any(digest in error for error in errors))
+
+    def test_cli_automatically_uses_local_reference_manifest_when_present(self):
+        payload = b"[synthetic]\nname=original-reference-text\n"
+        digest = hashlib.sha256(payload).hexdigest()
+        (self.repo / "safe.txt").write_bytes(payload)
+        self.git("add", "safe.txt")
+        analysis = self.repo / "analysis"
+        analysis.mkdir()
+        (analysis / "reference-manifest.json").write_text(json.dumps({
+            "version": 1,
+            "files": {"original.ini": {"size": len(payload), "sha256": digest}},
+        }), encoding="utf-8")
+        from tools.asset_guard import main
+        self.assertEqual(main(["--repo", str(self.repo)]), 1)
 
     def test_symlink_index_entry_is_detected(self):
         try:

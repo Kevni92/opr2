@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
+import json
 import re
 import subprocess
 import sys
@@ -68,7 +70,7 @@ def _path_reason(raw_path: str) -> str | None:
     return None
 
 
-def _content_reason(data: bytes) -> str | None:
+def _content_reason(data: bytes, reference_hashes: set[str] | None = None) -> str | None:
     if len(data) > MAX_BLOB_SIZE:
         return f"blob exceeds {MAX_BLOB_SIZE} byte limit"
     if b"\0" in data:
@@ -79,6 +81,8 @@ def _content_reason(data: bytes) -> str | None:
             return description
     if data.startswith(LFS_HEADER) and _LFS_OID.search(data[:4096]):
         return "Git LFS pointer"
+    if reference_hashes and hashlib.sha256(data).hexdigest() in reference_hashes:
+        return "content matches a local reference file"
     return None
 
 
@@ -115,7 +119,11 @@ def _safe_working_blob(root: Path, rel: str, errors: set[str]) -> bytes | None:
         return None
 
 
-def check_repository(root: Path, history: bool = False) -> list[str]:
+def check_repository(
+    root: Path,
+    history: bool = False,
+    reference_hashes: set[str] | None = None,
+) -> list[str]:
     """Return policy violations found in index, tracked files, or reachable history."""
     root = Path(root).expanduser().resolve(strict=True)
     top = Path(str(_git(root, "rev-parse", "--show-toplevel", binary=False)).strip()).resolve(strict=True)
@@ -144,14 +152,14 @@ def check_repository(root: Path, history: bool = False) -> list[str]:
             if not size_text.isdigit() or int(size_text) > MAX_BLOB_SIZE:
                 content_reason = f"blob exceeds {MAX_BLOB_SIZE} byte limit"
             else:
-                content_reason = _content_reason(_git(root, "cat-file", "blob", oid))
+                content_reason = _content_reason(_git(root, "cat-file", "blob", oid), reference_hashes)
             if content_reason:
                 errors.add(f"{rel}: {content_reason} (index blob)")
         if rel not in seen_working:
             seen_working.add(rel)
             working = _safe_working_blob(root, rel, errors)
             if working is not None:
-                content_reason = _content_reason(working)
+                content_reason = _content_reason(working, reference_hashes)
                 if content_reason:
                     errors.add(f"{rel}: {content_reason} (working file)")
 
@@ -184,7 +192,7 @@ def check_repository(root: Path, history: bool = False) -> list[str]:
             if not size_text.isdigit() or int(size_text) > MAX_BLOB_SIZE:
                 errors.add(f"{rel}: blob exceeds {MAX_BLOB_SIZE} byte limit (reachable history)")
                 continue
-            reason = _content_reason(_git(root, "cat-file", "blob", oid))
+            reason = _content_reason(_git(root, "cat-file", "blob", oid), reference_hashes)
             if reason:
                 errors.add(f"{rel}: {reason} (reachable history)")
     return sorted(errors)
@@ -194,10 +202,27 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo", type=Path, default=Path("."))
     parser.add_argument("--history", action="store_true", help="also scan all reachable Git history")
+    parser.add_argument("--manifest", type=Path, help="local reference manifest; defaults to analysis/reference-manifest.json when present")
     args = parser.parse_args(argv)
     try:
-        violations = check_repository(args.repo, args.history)
-    except (OSError, RuntimeError, ValueError) as exc:
+        manifest_path = args.manifest
+        if manifest_path is None:
+            candidate = args.repo / "analysis" / "reference-manifest.json"
+            if candidate.is_file():
+                manifest_path = candidate
+        hashes: set[str] | None = None
+        if manifest_path is not None:
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            if not isinstance(manifest, dict) or not isinstance(manifest.get("files"), dict):
+                raise ValueError("reference manifest must contain a files object")
+            hashes = set()
+            for rel, metadata in manifest["files"].items():
+                digest = metadata.get("sha256") if isinstance(metadata, dict) else None
+                if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
+                    raise ValueError(f"invalid SHA-256 entry in reference manifest: {rel!r}")
+                hashes.add(digest)
+        violations = check_repository(args.repo, args.history, hashes)
+    except (OSError, RuntimeError, ValueError, json.JSONDecodeError) as exc:
         print(f"asset guard error: {exc}", file=sys.stderr)
         return 2
     for violation in violations:
