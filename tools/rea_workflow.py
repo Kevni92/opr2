@@ -27,7 +27,7 @@ def _is_reparse(info: os.stat_result) -> bool:
     )
 
 
-def _check_path_components(path: Path, label: str) -> None:
+def _check_path_components(path: Path, label: str) -> Path:
     cursor = Path(path.anchor)
     for part in path.parts[1:]:
         cursor = cursor / part
@@ -35,6 +35,7 @@ def _check_path_components(path: Path, label: str) -> None:
             break
         if _is_reparse(cursor.lstat()):
             raise ValueError(f"REA blocked: {label} contains a symlink or reparse point")
+    return path
 
 
 def _load_server(root: Path, config: dict[str, Any]) -> tuple[dict[str, Any], Path]:
@@ -44,11 +45,6 @@ def _load_server(root: Path, config: dict[str, Any]) -> tuple[dict[str, Any], Pa
     path = Path(raw_path)
     path = path if path.is_absolute() else root / path
     path = Path(os.path.abspath(path))
-    local_lex = Path(os.path.abspath(root / "local"))
-    try:
-        path.relative_to(local_lex)
-    except ValueError as exc:
-        raise ValueError("REA blocked: MCP config must stay under local/") from exc
     _check_path_components(path, "MCP config path")
     local = (root / "local").resolve(strict=False)
     resolved = path.resolve(strict=False)
@@ -152,8 +148,10 @@ def prepare_rea(root: Path, config: dict[str, Any], run_dir: Path,
                 baseline: dict[str, Any]) -> dict[str, Any]:
     """Return the local REA stdio spec and private static-analysis task context."""
     root = Path(root).resolve(strict=True)
-    run_dir = Path(os.path.abspath(run_dir))
-    if not run_dir.is_relative_to(root / "analysis"):
+    run_raw = _check_path_components(Path(os.path.abspath(run_dir)), "run directory")
+    run_dir = run_raw.resolve(strict=False)
+    analysis_root = (root / "analysis").resolve(strict=False)
+    if not run_dir.is_relative_to(analysis_root):
         raise ValueError("REA blocked: run output must stay under checkout-root analysis/")
     server, config_path = _load_server(root, config)
     target = _target_info(root, baseline)

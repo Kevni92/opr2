@@ -1,4 +1,5 @@
 import hashlib
+import ctypes
 import json
 import os
 import subprocess
@@ -15,7 +16,7 @@ class ReaWorkflowTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
-        self.base = Path(self.temp.name)
+        self.base = Path(self.temp.name).resolve()
         self.root = self.base / "workspace"
         (self.root / "pr2").mkdir(parents=True)
         self.exe_bytes = b"synthetic PR2 executable fixture\x00not original data"
@@ -59,6 +60,31 @@ class ReaWorkflowTests(unittest.TestCase):
         result = subprocess.run([server["command"], *server["args"]], check=True, text=True,
                                 stdout=subprocess.PIPE, env={**os.environ, **server["env"]})
         self.assertEqual(json.loads(result.stdout), {"transport": "stdio", "test_env": "synthetic"})
+
+    @unittest.skipUnless(os.name == "nt", "Windows short-name alias regression")
+    def test_windows_short_alias_accepts_local_rea_config_and_output_path(self):
+        short_root = self.windows_short_alias(self.root)
+        if short_root is None:
+            self.skipTest("8.3 short path alias is unavailable")
+        config_path = short_root / "local" / "rea.mcp.json"
+        run_dir = short_root / "analysis" / "runs" / "short-alias"
+        context = prepare_rea(
+            self.root, {"rea_mcp_config": str(config_path)}, run_dir, self.baseline
+        )
+        self.assertEqual(Path(context["evidence_path"]).resolve(strict=False),
+                         (self.root / "analysis" / "runs" / "short-alias" / "analysis" / "rea-context.json"))
+
+    @staticmethod
+    def windows_short_alias(path):
+        buffer = ctypes.create_unicode_buffer(32768)
+        get_short = ctypes.windll.kernel32.GetShortPathNameW
+        get_short.argtypes = [ctypes.c_wchar_p, ctypes.c_wchar_p, ctypes.c_uint]
+        get_short.restype = ctypes.c_uint
+        length = get_short(str(path), buffer, len(buffer))
+        if not length or "~" not in buffer.value:
+            return None
+        short = Path(buffer.value)
+        return short if short.resolve(strict=False) == path.resolve(strict=False) else None
 
     def test_missing_or_remote_configuration_is_blocked(self):
         (self.config_dir / "rea.mcp.json").unlink()

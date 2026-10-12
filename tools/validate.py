@@ -30,6 +30,19 @@ def _within(path: Path, parent: Path) -> bool:
         return False
 
 
+def _reject_reparse_components(path: Path, label: str) -> Path:
+    """Inspect raw components before canonicalizing aliases or links."""
+    raw = Path(os.path.abspath(path))
+    cursor = Path(raw.anchor)
+    for part in raw.parts[1:]:
+        cursor = cursor / part
+        if not cursor.exists() and not cursor.is_symlink():
+            break
+        if _is_reparse(cursor.lstat()):
+            raise ValueError(f"{label} contains a symlink or reparse point: {cursor}")
+    return raw
+
+
 def _reference_hashes(manifest: dict) -> set[str]:
     files = manifest.get("files") if isinstance(manifest, dict) else None
     if not isinstance(files, dict):
@@ -46,27 +59,23 @@ def _reference_hashes(manifest: dict) -> set[str]:
 
 def _check_build_path(root: Path, build: Path, original: Path | None = None) -> Path:
     """Check path containment and links; this is not a process sandbox."""
-    root_lex = Path(os.path.abspath(root))
-    root_real = root_lex.resolve(strict=True)
-    build_input = build if build.is_absolute() else root_lex / build
-    build_lex = Path(os.path.abspath(build_input))
-    build_real = build_lex.resolve(strict=False)
-    pr2_lex = Path(os.path.abspath(root_lex / "pr2"))
-    pr2_real = pr2_lex.resolve(strict=False)
-    if (build_lex == root_lex or not _within(build_lex, root_lex)
-            or not _within(build_real, root_real)
-            or _within(build_lex, pr2_lex) or _within(build_real, pr2_real)):
+    root_real = Path(root).resolve(strict=True)
+    build_input = build if build.is_absolute() else root_real / build
+    build_raw = _reject_reparse_components(build_input, "build path")
+    build_real = build_raw.resolve(strict=False)
+    pr2_real = (root_real / "pr2").resolve(strict=False)
+    if (build_real == root_real or not _within(build_real, root_real)
+            or _within(build_real, pr2_real)):
         raise ValueError("build directory must be inside the workspace and outside pr2")
     if original is not None:
-        original_input = original if original.is_absolute() else root_lex / original
-        original_lex = Path(os.path.abspath(original_input))
-        original_real = original_lex.resolve(strict=True)
-        if _within(build_lex, original_lex) or _within(build_real, original_real):
+        original_input = original if original.is_absolute() else root_real / original
+        original_real = Path(original_input).resolve(strict=True)
+        if _within(build_real, original_real):
             raise ValueError("build directory must not be inside original data")
 
     # Inspect each path component and the existing tree without following links.
-    relative = build_lex.relative_to(root_lex)
-    cursor = root_lex
+    relative = build_real.relative_to(root_real)
+    cursor = root_real
     for part in relative.parts:
         cursor = cursor / part
         if not cursor.exists() and not cursor.is_symlink():
@@ -74,13 +83,13 @@ def _check_build_path(root: Path, build: Path, original: Path | None = None) -> 
         info = cursor.lstat()
         if _is_reparse(info):
             raise ValueError(f"build path contains a symlink or reparse point: {cursor}")
-        if cursor != build_lex and not stat.S_ISDIR(info.st_mode):
+        if cursor != build_real and not stat.S_ISDIR(info.st_mode):
             raise ValueError(f"build path component is not a directory: {cursor}")
-    if build_lex.exists():
-        info = build_lex.lstat()
+    if build_real.exists():
+        info = build_real.lstat()
         if _is_reparse(info) or not stat.S_ISDIR(info.st_mode):
             raise ValueError("build path must be a real directory")
-        for current, dirs, files in os.walk(build_lex, topdown=True, followlinks=False):
+        for current, dirs, files in os.walk(build_real, topdown=True, followlinks=False):
             current_path = Path(current)
             for name in list(dirs):
                 entry = current_path / name
@@ -94,50 +103,35 @@ def _check_build_path(root: Path, build: Path, original: Path | None = None) -> 
                 entry_info = entry.lstat()
                 if _is_reparse(entry_info):
                     raise ValueError(f"build tree contains a symlink or reparse point: {entry}")
-    return build_lex
+    return build_real
 
 
 def _check_reference_copy_target(root: Path, target: Path, build: Path,
                                  original: Path | None) -> Path:
     root_real = root.resolve(strict=True)
-    target_input = target if target.is_absolute() else root / target
-    target_lex = Path(os.path.abspath(target_input))
-    target_real = target_lex.resolve(strict=False)
+    target_input = target if target.is_absolute() else root_real / target
+    target_raw = _reject_reparse_components(target_input, "analysis output path")
+    target_real = target_raw.resolve(strict=False)
     build_real = build.resolve(strict=False)
-    pr2_real = (root / "pr2").resolve(strict=False)
-    blocked = [build, build_real, root / "pr2", pr2_real]
+    pr2_real = (root_real / "pr2").resolve(strict=False)
+    blocked = [build_real, pr2_real]
     if original is not None:
-        blocked.extend([original, original.resolve(strict=True)])
+        blocked.append(original.resolve(strict=True))
     for path in blocked:
-        path_lex = Path(os.path.abspath(path))
         path_real = path.resolve(strict=False)
-        if (_within(target_lex, path_lex) or _within(target_real, path_real)
-                or target_lex == path_lex or target_real == path_real):
+        if _within(target_real, path_real) or target_real == path_real:
             raise ValueError("original-data copy must be outside build and original-data trees")
-    if target_lex == root or target_real == root_real:
+    if target_real == root_real:
         raise ValueError("original-data copy target must be a dedicated analysis directory")
-    analysis_lex = Path(os.path.abspath(root / "analysis"))
-    analysis_real = analysis_lex.resolve(strict=False)
-    if ((_within(target_lex, root) and not _within(target_lex, analysis_lex))
-            or (_within(target_real, root_real) and not _within(target_real, analysis_real))):
+    analysis_real = (root_real / "analysis").resolve(strict=False)
+    if _within(target_real, root_real) and not _within(target_real, analysis_real):
         raise ValueError("in-workspace original-data copies must stay under analysis/")
 
-    # Check every existing path component, including ancestors outside the repo.
-    cursor = Path(target_lex.anchor)
-    for part in target_lex.parts[1:]:
-        cursor = cursor / part
-        if not cursor.exists() and not cursor.is_symlink():
-            break
-        info = cursor.lstat()
-        if _is_reparse(info):
-            raise ValueError(f"analysis output path contains a symlink or reparse point: {cursor}")
-        if cursor != target_lex and not stat.S_ISDIR(info.st_mode):
-            raise ValueError(f"analysis output path component is not a directory: {cursor}")
-    if target_lex.exists():
-        info = target_lex.lstat()
+    if target_real.exists():
+        info = target_real.lstat()
         if _is_reparse(info) or not stat.S_ISDIR(info.st_mode):
             raise ValueError("original-data copy target must be a real directory")
-    return target_lex
+    return target_real
 
 
 def run(command: list[str], root: Path) -> None:

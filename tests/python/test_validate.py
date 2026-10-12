@@ -1,4 +1,6 @@
 import json
+import ctypes
+import os
 import shutil
 import subprocess
 import sys
@@ -17,7 +19,7 @@ class ValidateTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
-        self.base = Path(self.temp.name)
+        self.base = Path(self.temp.name).resolve()
         self.root = self.base / "workspace"
         self.root.mkdir()
 
@@ -42,6 +44,28 @@ class ValidateTests(unittest.TestCase):
                 validation.validate(self.root, original / "build", original=original)
         run.assert_not_called()
         guard.assert_not_called()
+
+    @unittest.skipUnless(os.name == "nt", "Windows short-name alias regression")
+    def test_windows_short_alias_accepts_workspace_build_but_still_blocks_pr2(self):
+        short_root = self.windows_short_alias(self.root)
+        if short_root is None:
+            self.skipTest("8.3 short path alias is unavailable")
+        normal = self.root / "build" / "validation"
+        self.assertEqual(validation._check_build_path(short_root, short_root / "build" / "validation"), normal)
+        with self.assertRaises(ValueError):
+            validation._check_build_path(short_root, short_root / "pr2" / "validation")
+
+    @staticmethod
+    def windows_short_alias(path):
+        buffer = ctypes.create_unicode_buffer(32768)
+        get_short = ctypes.windll.kernel32.GetShortPathNameW
+        get_short.argtypes = [ctypes.c_wchar_p, ctypes.c_wchar_p, ctypes.c_uint]
+        get_short.restype = ctypes.c_uint
+        length = get_short(str(path), buffer, len(buffer))
+        if not length or "~" not in buffer.value:
+            return None
+        short = Path(buffer.value)
+        return short if short.resolve(strict=False) == path.resolve(strict=False) else None
 
     def test_normal_orchestration_uses_reference_copy_and_manifest_hashes(self):
         original, manifest, baseline = self.make_reference()
