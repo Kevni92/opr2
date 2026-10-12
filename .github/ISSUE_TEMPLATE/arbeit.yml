@@ -1,0 +1,33 @@
+name: Begrenzte Entwicklungsaufgabe
+description: Eine überprüfbare Aufgabe mit Task-JSON-Vertrag anlegen
+title: ""
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Arbeit beginnt mit einem begrenzten Issue. Originaldaten dürfen nicht veröffentlicht werden. Lies `AGENTS.md` und `docs/workflow.md`.
+  - type: textarea
+    id: task_json
+    attributes:
+      label: Task-Vertrag (JSON)
+      description: Nutze version 1. Siehe docs/workflow.md für Feldregeln.
+      render: json
+      placeholder: |
+        {
+          "version": 1,
+          "complexity": "small",
+          "allowed_paths": ["src/example.cpp"],
+          "dependencies": [],
+          "requires_original_data": false,
+          "acceptance": ["The behavior is validated."]
+        }
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Kontext und unabhängige Erkenntnisse
+      description: Nur knapp selbst formulierte Erkenntnisse. Keine Rohdaten, Screenshots, Manifeste oder Transkripte.
+    validations:
+      required: true
