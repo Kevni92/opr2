@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -12,7 +13,13 @@ from typing import Any
 def _toml(value: Any) -> str:
     """Encode our validated stdio server config as a TOML CLI override."""
     if isinstance(value, dict):
-        return "{" + ",".join(json.dumps(k) + "=" + _toml(v) for k, v in value.items()) + "}"
+        fields = []
+        for key, item in value.items():
+            if not isinstance(key, str):
+                raise ValueError("TOML table keys must be strings")
+            encoded_key = key if re.fullmatch(r"[A-Za-z0-9_-]+", key) else json.dumps(key, ensure_ascii=True)
+            fields.append(f"{encoded_key} = {_toml(item)}")
+        return "{ " + ", ".join(fields) + " }"
     if isinstance(value, list):
         return "[" + ",".join(_toml(v) for v in value) + "]"
     return json.dumps(value, ensure_ascii=True)
@@ -39,7 +46,8 @@ def build_command(settings: dict[str, Any], model: str, role: str,
                 raise ValueError("windows_sandbox must select a supported bounded Windows sandbox")
             extra += ["-c", "windows.sandbox=" + _toml(windows_sandbox)]
         if rea:
-            server = {**rea["server"], "enabled_tools": rea_tools,
+            server = {**rea["server"], "enabled": True, "required": True,
+                      "enabled_tools": rea_tools, "default_tools_approval_mode": "approve",
                       "startup_timeout_sec": 60, "tool_timeout_sec": 300}
             extra += ["-c", "mcp_servers.rea=" + _toml(server)]
         return command + ["--ask-for-approval", "never", "exec", "--ephemeral", "--ignore-user-config",
