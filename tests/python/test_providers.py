@@ -20,13 +20,40 @@ class ProviderTests(unittest.TestCase):
         self.schema.write_text('{"type":"object"}', encoding="utf-8")
         self.result = {"status": "completed", "summary": "Synthetic task", "tests": [], "risks": []}
 
-    def test_codex_roles_have_distinct_sandbox_and_no_model_hardcoding(self):
-        for role, sandbox in [("worker", "workspace-write"), ("reviewer", "read-only")]:
+    def test_codex_roles_use_permission_profiles_without_legacy_sandbox_or_model_hardcoding(self):
+        for role in ["worker", "reviewer"]:
             args = build_command({"kind": "codex", "command": ["codex"]}, "chosen-model", role,
                                  self.root, self.schema, self.root / "result.json")
             self.assertEqual(args[args.index("--model") + 1], "chosen-model")
-            self.assertEqual(args[args.index("--sandbox") + 1], sandbox)
+            self.assertNotIn("--sandbox", args)
             self.assertNotIn("--dangerously-bypass-approvals-and-sandbox", args)
+            self.assertIn('default_permissions=":read-only"' if role == "reviewer" else
+                          'default_permissions=":workspace"', args)
+
+    def test_codex_child_does_not_inherit_a_full_access_permission_profile(self):
+        def simulate(args, **kwargs):
+            expected = ":workspace" if 'default_permissions=":workspace"' in args else ":read-only"
+            self.assertEqual(kwargs["env"]["CODEX_PERMISSION_PROFILE"], expected)
+            result = self.result if expected == ":workspace" else {
+                "verdict": "approve", "summary": "Synthetic review", "findings": []}
+            Path(args[args.index("--output-last-message") + 1]).write_text(json.dumps(result), encoding="utf-8")
+            return subprocess.CompletedProcess(args, 0)
+        for role in ["worker", "reviewer"]:
+            with patch.dict("providers.os.environ", {"CODEX_PERMISSION_PROFILE": ":danger-full-access"}), \
+                    patch("providers.shutil.which", return_value="codex"), \
+                    patch("providers.subprocess.run", side_effect=simulate):
+                run_provider({"kind": "codex", "command": ["codex"]}, "chosen", role, self.root,
+                             self.schema, self.root / role, "synthetic task", 10)
+
+    def test_codex_can_select_an_existing_windows_sandbox_without_loading_global_config(self):
+        settings = {"kind": "codex", "command": ["codex"], "windows_sandbox": "elevated"}
+        args = build_command(settings, "chosen", "worker", self.root, self.schema, self.root / "result.json")
+        self.assertIn('windows.sandbox="elevated"', args)
+        self.assertGreater(args.index('windows.sandbox="elevated"'), args.index("exec"))
+        for invalid in ["disabled", "danger-full-access", False, []]:
+            with self.subTest(value=invalid), self.assertRaises(ValueError):
+                build_command({**settings, "windows_sandbox": invalid}, "chosen", "worker",
+                              self.root, self.schema, self.root / "result.json")
 
     def test_claude_reviewer_has_no_write_or_shell_tools(self):
         args = build_command({"kind": "claude", "command": ["claude"]}, "chosen-model", "reviewer",

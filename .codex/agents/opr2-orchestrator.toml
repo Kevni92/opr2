@@ -1,4 +1,5 @@
 name = "opr2_orchestrator"
+model = "gpt-6-luna"
 description = "Coordinate opr2 issues using the provider-neutral validated workflow."
 developer_instructions = """
 Read .agents/skills/opr2-orchestrator/SKILL.md and follow its task workflow.

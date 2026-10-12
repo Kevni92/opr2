@@ -70,8 +70,30 @@ und Modelle lassen sich je Rolle wählen:
 
 ```text
 python tools/orchestrator.py plan --issue N --config local/orchestrator.json
-python tools/orchestrator.py run --issue N --config local/orchestrator.json --provider claude --model sonnet --review-provider codex --review-model gpt-6.1-sol
+python tools/orchestrator.py run --issue N --config local/orchestrator.json --provider claude --model sonnet --review-provider codex --review-model gpt-6-luna
 ```
+
+Codex verwendet standardmäßig Luna für Koordination, Worker und den separaten
+Reviewer. Der Runner ist ein Python-Programm; es läuft kein zusätzliches
+teures Koordinatormodell. Größere Modelle werden nur ausdrücklich ausgewählt.
+
+Der Codex-Adapter benötigt eine CLI mit benannten Berechtigungsprofilen. Er
+setzt für Worker `:workspace`, für Reviewer `:read-only` und übernimmt kein
+Full-Access-Profil des aufrufenden Prozesses. Er lädt die globale
+`config.toml` nicht, damit zusätzliche MCP-Server nicht unbeabsichtigt starten.
+Unter Windows trage deshalb die bereits eingerichtete Sandbox im lokalen
+Codex-Provider ein, zum Beispiel:
+
+```json
+"windows_sandbox": "elevated"
+```
+
+Unterstützte Werte sind `mxc`, `elevated` und `unelevated`; wähle die auf
+deinem Rechner eingerichtete und erlaubte Variante. Der Runner richtet keine
+Sandbox ein, ändert keine Host-Richtlinien und weicht bei Fehlern nicht auf
+Full Access aus. Die Optionen folgen der offiziellen Dokumentation zu
+[Berechtigungsprofilen](https://learn.chatgpt.com/docs/permissions) und zur
+[Windows-Sandbox](https://learn.chatgpt.com/docs/windows/windows-sandbox).
 
 Ein eigener CLI-Adapter kann unter `providers` mit `"kind": "command"`
 eingetragen werden. `command` ist ein argv-Array; der Orchestrator startet es

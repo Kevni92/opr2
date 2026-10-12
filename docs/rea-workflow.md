@@ -1,12 +1,12 @@
 # Analyse mit REA MCP und Ghidra
 
-REA MCP ist eine ausdr?cklich aktivierte lokale Analysef?higkeit. Codex und
+REA MCP ist eine ausdrücklich aktivierte lokale Analysefähigkeit. Codex und
 Claude erhalten dieselbe stdio-Konfiguration; Ghidra liefert die native
-statische Analyse. F?r eine begrenzte Analyseaufgabe enth?lt der Issue-Vertrag
-zus?tzlich `"capabilities": ["rea"]` und `"requires_original_data": true`.
+statische Analyse. Für eine begrenzte Analyseaufgabe enthält der Issue-Vertrag
+zusätzlich `"capabilities": ["rea"]` und `"requires_original_data": true`.
 Normale Implementierungsaufgaben starten keinen REA-Server.
 
-Installiere die GOG-Version in root `pr2/`, lege einmalig das Integrit?tsmanifest
+Installiere die GOG-Version in root `pr2/`, lege einmalig das Integritätsmanifest
 an und richte REA, Ghidra sowie das passende JDK lokal ein. Kopiere
 [rea-mcp.example.json](../automation/rea-mcp.example.json) nach
 `local/rea.mcp.json` und passe `command`, `args`, `GHIDRA_INSTALL_DIR` und
@@ -15,37 +15,37 @@ an und richte REA, Ghidra sowie das passende JDK lokal ein. Kopiere
 Rechnerpfade und Konfiguration bleiben in `local/`. Es wird genau ein lokaler
 stdio-Server namens `rea` akzeptiert; Remote-Endpunkte sind ausgeschlossen.
 
-Der Orchestrator pr?ft `pr2/PR2.exe` gegen das lokale Manifest und ?bergibt
-Zielpfad, Identit?t und Analyseausgabepfad. Der Agent ?ffnet genau dieses Ziel
-mit `provider_id=ghidra` und vergleicht die von REA gemeldete Identit?t. Fr?here
-Ghidra-Projekte oder Snapshots werden nicht ?bernommen. Die Bin?rdatei wird
-weder ausgef?hrt noch als Datei in einen Prompt eingef?gt.
+Der Orchestrator prüft `pr2/PR2.exe` gegen das lokale Manifest und übergibt
+Zielpfad, Identität und Analyseausgabepfad. Der Agent öffnet genau dieses Ziel
+mit `provider_id=ghidra` und vergleicht die von REA gemeldete Identität. Frühere
+Ghidra-Projekte oder Snapshots werden nicht übernommen. Die Binärdatei wird
+weder ausgeführt noch als Datei in einen Prompt eingefügt.
 
-Der Codex-Adapter l?dt REA ausdr?cklich mit einer Liste zul?ssiger statischer
+Der Codex-Adapter lädt REA ausdrücklich mit einer Liste zulässiger statischer
 Tools. Der Claude-Adapter nutzt `--strict-mcp-config` mit demselben Server und
-einzelnen erlaubten MCP-Tools. Der unabh?ngige Reviewer erh?lt keinen Export-
-oder Schreibauftrag. Weitere CLIs k?nnen den lokalen Kontext ?ber den
+einzelnen erlaubten MCP-Tools. Der unabhängige Reviewer erhält keinen Export-
+oder Schreibauftrag. Weitere CLIs können den lokalen Kontext über den
 Platzhalter `{rea_context}` beziehen; ihr Adapter muss dieselben Grenzen
-umsetzen. Das ist keine Betriebssystem-Sandbox f?r den MCP-Server.
+umsetzen. Das ist keine Betriebssystem-Sandbox für den MCP-Server.
 
-Die Liste in `tools/rea_workflow.py` erlaubt Ziel?ffnung, Metadaten, Funktionen,
+Die Liste in `tools/rea_workflow.py` erlaubt Zielöffnung, Metadaten, Funktionen,
 Strings, Referenzen, Bytes und Funktionsanalyse. Der Worker kann Evidenz lokal
-exportieren. Runtime-Beobachtungen, Originalausf?hrung, Annotationen,
+exportieren. Runtime-Beobachtungen, Originalausführung, Annotationen,
 Datenbankmutationen und Extraktion sind ausgeschlossen.
 
-Alle behaltenen Rohbefunde, Ghidra-Ausgaben und Evidenzpakete geh?ren in das
+Alle behaltenen Rohbefunde, Ghidra-Ausgaben und Evidenzpakete gehören in das
 absolute, im Auftrag genannte Verzeichnis unter root `analysis/runs/`.
-?ffentliche Erkenntnisse werden eigenst?ndig formuliert und trennen
+Öffentliche Erkenntnisse werden eigenständig formuliert und trennen
 **beobachtet**, **abgeleitet** und **unbekannt**. Keine Pseudocode-, String- oder
-Adress-Dumps, Screenshots oder Rohberichte in GitHub ?bernehmen. Aus einer
-solchen gepr?ften Spezifikation entstehen begrenzte Implementierungs-Issues.
+Adress-Dumps, Screenshots oder Rohberichte in GitHub übernehmen. Aus einer
+solchen geprüften Spezifikation entstehen begrenzte Implementierungs-Issues.
 
-Fehlende Tools, Identit?tsabweichungen oder eine durch die Windows-
+Fehlende Tools, Identitätsabweichungen oder eine durch die Windows-
 Anwendungssteuerung blockierte Ghidra-Komponente ergeben `blocked`. Die
 Richtlinie wird nicht umgangen. Auf diesem Entwicklerrechner ist eine solche
 Blockade des nativen Ghidra-Decompilers bekannt; erfolgreiche Zielidentifikation
 belegt deshalb noch keine abgeschlossene tiefe Analyse.
 
-Der gemeinsame Ablauf wurde synthetisch gepr?ft. Der Codex-CLI-Protokollaufruf
-wurde zus?tzlich live gepr?ft. Claude ist lokal installiert, aber nicht
+Der gemeinsame Ablauf wurde synthetisch geprüft. Der Codex-CLI-Protokollaufruf
+wurde zusätzlich live geprüft. Claude ist lokal installiert, aber nicht
 angemeldet; eine echte Claude-REA-Sitzung ist bisher nicht nachgewiesen.
