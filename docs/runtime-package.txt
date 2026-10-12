@@ -1,0 +1,16 @@
+opr2 runtime package
+
+This package contains the independent opr2 bootstrap executable and this file.
+It is not yet a playable game.
+
+The bootstrap does not include Port Royale 2 data or original game DLLs. Supply
+the four CPR archives from a legally obtained installation:
+
+  pr2_arcd.cpr
+  pr2_arcs.cpr
+  pr2_arct.cpr
+  pr2_loca.cpr
+
+Run `opr2 --check-data` to validate the archives beside the executable, or pass
+`--data-dir PATH` to select another directory. The check reads only each file's
+signature and does not extract or modify archive contents.
