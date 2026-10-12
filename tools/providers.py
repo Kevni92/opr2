@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import subprocess
 from pathlib import Path
@@ -32,13 +33,18 @@ def build_command(settings: dict[str, Any], model: str, role: str,
         rea_tools.remove("export_evidence_bundle")
     if kind == "codex":
         extra = ["--add-dir", str(analysis_output)] if role == "worker" and analysis_output else []
+        windows_sandbox = settings.get("windows_sandbox")
+        if windows_sandbox is not None:
+            if not isinstance(windows_sandbox, str) or windows_sandbox not in {"mxc", "elevated", "unelevated"}:
+                raise ValueError("windows_sandbox must select a supported bounded Windows sandbox")
+            extra += ["-c", "windows.sandbox=" + _toml(windows_sandbox)]
         if rea:
             server = {**rea["server"], "enabled_tools": rea_tools,
                       "startup_timeout_sec": 60, "tool_timeout_sec": 300}
             extra += ["-c", "mcp_servers.rea=" + _toml(server)]
         return command + ["--ask-for-approval", "never", "exec", "--ephemeral", "--ignore-user-config",
-                          "--sandbox", "read-only" if role == "reviewer" else "workspace-write",
                           "--cd", str(workspace), "--model", model,
+                          "-c", 'default_permissions=":read-only"' if role == "reviewer" else 'default_permissions=":workspace"',
                           "-c", "agents.enabled=false", "--output-schema", str(schema),
                           "--output-last-message", str(output), *extra, "-"]
     if kind == "claude":
@@ -97,9 +103,12 @@ def run_provider(settings: dict[str, Any], model: str, role: str, workspace: Pat
     (directory / "prompt.txt").write_text(prompt, encoding="utf-8")
     with (directory / "stdout.log").open("w", encoding="utf-8") as stdout, \
             (directory / "stderr.log").open("w", encoding="utf-8") as stderr:
+        environment = os.environ.copy()
+        if settings["kind"] == "codex":
+            environment["CODEX_PERMISSION_PROFILE"] = ":read-only" if role == "reviewer" else ":workspace"
         completed = subprocess.run(command, cwd=workspace, input=prompt, text=True,
                                    encoding="utf-8", stdout=stdout, stderr=stderr,
-                                   timeout=timeout, check=False)
+                                   timeout=timeout, check=False, env=environment)
     if completed.returncode:
         raise RuntimeError(f"{role} provider failed ({completed.returncode}); inspect local {directory}")
     if settings["kind"] == "claude":
