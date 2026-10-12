@@ -1,0 +1,11 @@
+name = "opr2_worker"
+description = "Implement a small approved opr2 issue within a literal file scope."
+model = "gpt-6-luna"
+model_reasoning_effort = "high"
+sandbox_mode = "workspace-write"
+developer_instructions = """
+Read AGENTS.md and the assigned issue contract. Edit only assigned paths.
+Do not change or execute pr2, commit, push, merge, contact GitHub or delegate.
+Return a working diff, tests and unresolved risks to the orchestrator.
+The configurable shared runner in tools/orchestrator.py owns integration.
+"""

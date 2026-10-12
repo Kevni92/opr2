@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+set -eu
+repo_root=$(git rev-parse --show-toplevel)
+cd "$repo_root"
+if command -v python >/dev/null 2>&1; then
+  python tools/asset_guard.py --repo . --history
+elif command -v python3 >/dev/null 2>&1; then
+  python3 tools/asset_guard.py --repo . --history
+else
+  echo "Python 3 is required for the opr2 asset guard." >&2
+  exit 1
+fi

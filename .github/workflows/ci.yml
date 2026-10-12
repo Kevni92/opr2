@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  merge_group:
+
+permissions:
+  contents: read
+
+jobs:
+  validation:
+    name: validation (${{ matrix.name }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: windows-msvc
+            os: windows-2022
+            generator: Visual Studio 17 2022
+            sanitizer: false
+          - name: ubuntu-gcc
+            os: ubuntu-latest
+            generator: Ninja
+            sanitizer: false
+          - name: ubuntu-clang-sanitizers
+            os: ubuntu-latest
+            generator: Ninja
+            sanitizer: true
+    runs-on: ${{ matrix.os }}
+    env:
+      CMAKE_GENERATOR: ${{ matrix.generator }}
+    steps:
+      - name: Check out full history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Set up Python 3.11
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.11'
+      - name: Install Linux build tools
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install --yes ninja-build clang
+      - name: Validate with GCC
+        if: matrix.name == 'ubuntu-gcc'
+        run: python tools/validate.py --build-dir build/ci
+      - name: Validate with Clang sanitizers
+        if: matrix.sanitizer
+        env:
+          CXX: clang++
+        run: python tools/validate.py --build-dir build/ci --sanitizers
+      - name: Validate with Visual Studio 2022
+        if: runner.os == 'Windows'
+        run: python tools/validate.py --build-dir build/ci
+      - name: Upload validated runtime package
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: opr2-${{ matrix.name }}
+          path: build/ci/package/
+          if-no-files-found: error
+
+  validation-required:
+    name: validation-required
+    if: always()
+    needs: [validation]
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - name: Require every validation matrix job
+        env:
+          VALIDATION_RESULT: ${{ needs.validation.result }}
+        run: test "$VALIDATION_RESULT" = success

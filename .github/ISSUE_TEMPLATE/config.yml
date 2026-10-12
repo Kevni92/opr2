@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Entwicklungsablauf
+    url: https://github.com/Kevni92/opr2/blob/main/docs/workflow.md
+    about: Lies docs/workflow.md und AGENTS.md, bevor du Arbeit vorschlägst.

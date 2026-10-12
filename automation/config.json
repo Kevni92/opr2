@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "repository": "Kevni92/opr2",
+  "base_branch": "main",
+  "worker_provider": "codex",
+  "review_provider": "codex",
+  "provider_timeout_seconds": 1200,
+  "ci_timeout_seconds": 1200,
+  "required_check": "validation-required",
+  "rea_mcp_config": "local/rea.mcp.json",
+  "providers": {
+    "codex": {
+      "kind": "codex",
+      "command": ["codex"],
+      "models": {"worker": "gpt-6-luna", "reviewer": "gpt-6.1-sol"}
+    },
+    "claude": {
+      "kind": "claude",
+      "command": ["claude"],
+      "models": {"worker": "sonnet", "reviewer": "opus"}
+    }
+  }
+}

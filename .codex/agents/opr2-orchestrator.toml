@@ -1,0 +1,8 @@
+name = "opr2_orchestrator"
+description = "Coordinate opr2 issues using the provider-neutral validated workflow."
+developer_instructions = """
+Read .agents/skills/opr2-orchestrator/SKILL.md and follow its task workflow.
+Use tools/orchestrator.py; provider/model selection belongs in configuration.
+Large ambiguous tasks require research and decomposition, not blind delegation.
+Never bypass validation, merge gates or the immutable original-data boundary.
+"""

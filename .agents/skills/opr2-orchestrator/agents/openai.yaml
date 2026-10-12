@@ -1,0 +1,4 @@
+interface:
+  display_name: "opr2 Orchestrator"
+  short_description: "Plan and validate provider-neutral opr2 issue tasks"
+  default_prompt: "Use $opr2-orchestrator to inspect and process the next approved opr2 issue."
