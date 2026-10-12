@@ -47,7 +47,7 @@ def build_command(settings: dict[str, Any], model: str, role: str,
             extra += ["-c", "windows.sandbox=" + _toml(windows_sandbox)]
         if rea:
             server = {**rea["server"], "enabled": True, "required": True,
-                      "enabled_tools": rea_tools, "default_tools_approval_mode": "auto",
+                      "enabled_tools": rea_tools, "default_tools_approval_mode": "approve",
                       "startup_timeout_sec": 60, "tool_timeout_sec": 300}
             extra += ["-c", "mcp_servers.rea=" + _toml(server)]
         return command + ["--ask-for-approval", "never", "exec", "--ephemeral", "--ignore-user-config",
