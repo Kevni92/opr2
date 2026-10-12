@@ -20,6 +20,11 @@ These rules apply to every contributor and every AI provider. Read
 - Delegated workers edit only their assigned paths, do not delegate further,
   and do not commit, push, merge, change issue state or run original programs.
   The orchestrator owns these integration actions after validation.
+  Workers describe tests but do not execute changed project code or build/test
+  scripts before the independent review. The runner executes them after approval.
+- REA analysis tasks explicitly request `capabilities: ["rea"]`. Read
+  `docs/rea-workflow.md`; use the fresh manifest-bound target, static tools only,
+  and the absolute private analysis output path supplied by the orchestrator.
 - Provider and model are configuration choices. Simple Codex tasks default to
   GPT-6 Luna; Claude Code and other adapters follow the same task contract.
 - A separate reviewer must approve the current commit. Merge requires the
