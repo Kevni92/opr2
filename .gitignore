@@ -1,1 +1,11 @@
-pr2
+/pr2/
+/analysis/
+/build/
+/dist/
+/.worktrees/
+/local/
+CMakeUserPresets.json
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
