@@ -27,6 +27,15 @@ int main(int argc, char* argv[]) {
 
     for (int index = 1; index < argc; ++index) {
         const std::string_view argument(argv[index]);
+        if (argument == "--version") {
+            if (argc != 2) {
+                std::cerr << "--version cannot be combined with other options\n";
+                print_help(std::cerr);
+                return kUsageError;
+            }
+            std::cout << OPR2_VERSION << '\n';
+            return 0;
+        }
         if (argument == "--help") {
             if (argc != 2) {
                 std::cerr << "--help cannot be combined with other options\n";
