@@ -1,0 +1,47 @@
+name: Begrenzte Workflow-Infrastruktur
+description: Ein Maintainer-Paket für geschützte Tools, Agenten, Policies oder Automation
+labels: ["type:task", "complexity:small", "area:automation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Maintainer-Lane: nicht durch den normalen Small-Worker-Runner ausführen und nicht an normale Worker delegieren. Die PROTECTED-Liste bleibt bestehen. Eine eigene primäre Luna-Maintainer-Sitzung bearbeitet den begrenzten Auftrag; Integration und unabhängiges Review bleiben beim Koordinator.
+  - type: textarea
+    id: objective
+    attributes:
+      label: Genau eine Infrastrukturänderung
+      description: Konkretes Verhalten, Grenzen, Kompatibilität und Abbruchbedingungen nennen. Keine Spielimplementierung mit Infrastruktur mischen.
+    validations:
+      required: true
+  - type: textarea
+    id: routing
+    attributes:
+      label: Routing
+      placeholder: |
+        | Feld | Wert |
+        |---|---|
+        | Stage | bootstrap |
+        | Role | maintainer |
+        | Lane | maintainer |
+        | Parent | #22 |
+        | Package | konkrete-infrastrukturfunktion |
+        | Budget | eine Änderung; höchstens ein begründeter Korrekturversuch |
+    validations:
+      required: true
+  - type: textarea
+    id: contract
+    attributes:
+      label: Task-Vertrag für das Maintainer-Paket
+      description: Der bisherige Small-Worker-Parser lehnt geschützte Pfade absichtlich ab. Dieses Issue ist keine Ausnahme vom Schutz.
+      render: json
+      placeholder: |
+        {
+          "version": 1,
+          "complexity": "small",
+          "allowed_paths": ["tools/example.py", "tests/python/test_example.py"],
+          "dependencies": [],
+          "requires_original_data": false,
+          "acceptance": ["Die begrenzte Funktion und ihre Fehlerfälle sind mit synthetischen Eingaben geprüft; bestehende Scope-, Review- und Merge-Gates bleiben erhalten."]
+        }
+    validations:
+      required: true

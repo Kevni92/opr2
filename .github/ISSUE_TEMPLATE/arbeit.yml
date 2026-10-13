@@ -25,6 +25,20 @@ body:
     validations:
       required: true
   - type: textarea
+    id: routing
+    attributes:
+      label: Routing und Paketgrenze (optional für bestehende Aufgaben)
+      description: Metadaten außerhalb des JSON; siehe docs/reconstruction-workflow.md. Der aktuelle Runner wertet Routing noch nicht aus.
+      placeholder: |
+        | Feld | Wert |
+        |---|---|
+        | Stage | implement |
+        | Role | opr2_cpp |
+        | Lane | worker |
+        | Parent | #10 |
+        | Package | konkrete-operation |
+        | Budget | eine Operation; höchstens ein begründeter Korrekturversuch |
+  - type: textarea
     id: context
     attributes:
       label: Kontext und unabhängige Erkenntnisse

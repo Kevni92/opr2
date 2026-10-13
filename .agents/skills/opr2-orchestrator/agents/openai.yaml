@@ -1,4 +1,4 @@
 interface:
   display_name: "opr2 Orchestrator"
-  short_description: "Plan and validate provider-neutral opr2 issue tasks"
-  default_prompt: "Use $opr2-orchestrator to inspect and process the next approved opr2 issue."
+  short_description: "Coordinate bounded opr2 reconstruction issues"
+  default_prompt: "Use $opr2-orchestrator to plan and route one approved opr2 reconstruction issue through the documented workflow."

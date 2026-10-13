@@ -1,3 +1,6 @@
+#:schema https://developers.openai.com/codex/config-schema.json
+# Native specialist definitions are in agents/. The coordinator explicitly uses
+# GPT-6 Sol; ordinary subagents stay on Luna. This does not start a queue.
 [agents]
 enabled = true
 max_concurrent_threads_per_session = 2

@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "status": "specification",
+  "documentation": "docs/reconstruction-workflow.md",
+  "backlog": "https://github.com/Kevni92/opr2/issues/22",
+  "runtime": {
+    "implemented_entrypoint": "tools/orchestrator.py",
+    "implemented_actions": ["plan", "run"],
+    "implemented_worker_dispatch": "generic-worker-and-independent-reviewer",
+    "planned_features": ["specialist-dispatch", "bounded-queue", "resume", "family-grants", "decompilation-checkpoints", "coverage-ledger"],
+    "autostart": false
+  },
+  "models": {
+    "coordinator": "gpt-6-sol",
+    "worker": "gpt-6-luna",
+    "reviewer": "gpt-6-luna",
+    "fallback": false
+  },
+  "roles": {
+    "plan": "opr2_planner",
+    "inventory": "opr2_inventory",
+    "decompile": "opr2_decompiler",
+    "partition": "opr2_partitioner",
+    "specify": "opr2_specifier",
+    "implement": "opr2_cpp",
+    "test": "opr2_test_author",
+    "review": "opr2_reviewer",
+    "validate": "opr2_validator",
+    "compatibility": "opr2_worker"
+  },
+  "stages": ["bootstrap", "inventory", "decompile", "partition", "specify", "implement", "test", "validate", "integrate"],
+  "worker_roles": ["opr2_planner", "opr2_inventory", "opr2_decompiler", "opr2_partitioner", "opr2_specifier", "opr2_cpp", "opr2_test_author", "opr2_worker"],
+  "review_roles": ["opr2_reviewer"],
+  "post_review_roles": ["opr2_validator"],
+  "reserved_lane_roles": {"maintainer": "primary-luna-maintainer-session"},
+  "routing_fields_outside_contract": ["Stage", "Role", "Lane", "Parent", "Package", "Budget"],
+  "task_contract_version": 1,
+  "worker_result_schema": "automation/worker-result.schema.json",
+  "review_result_schema": "automation/review-result.schema.json",
+  "planning_limits": {
+    "issues_per_coordinator_run": 5,
+    "integrating_issues_per_checkout": 1,
+    "native_subagents": 2,
+    "worker_sessions_per_attempt": 1,
+    "review_sessions_per_attempt": 1,
+    "correction_attempts": 1,
+    "decompilation_functions_per_batch": 64,
+    "rea_calls_per_batch": 40,
+    "initial_context_characters_excluding_policy_and_contract": 24000,
+    "hard_token_accounting_implemented": false
+  },
+  "invariants": {
+    "original_execution": false,
+    "original_writes": false,
+    "rea_static_only": true,
+    "original_target_binding": "manifest-bound-fresh-PR2.exe",
+    "raw_outputs": "analysis/runs/",
+    "private_outputs_require_injected_absolute_path": true,
+    "review_before_changed_code_execution": true,
+    "exact_commit_review": true,
+    "local_validation_required": true,
+    "current_ci_required": true,
+    "protected_paths_require_maintainer_lane": true,
+    "ready_requires_maintainer_or_implemented_bounded_grant": true,
+    "unknown_is_success": false,
+    "original_dll_runtime_dependency": false
+  }
+}

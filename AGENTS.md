@@ -25,9 +25,11 @@ These rules apply to every contributor and every AI provider. Read
 - REA analysis tasks explicitly request `capabilities: ["rea"]`. Read
   `docs/rea-workflow.md`; use the fresh manifest-bound target, static tools only,
   and the absolute private analysis output path supplied by the orchestrator.
-- Provider and model are configuration choices. Codex coordination, workers and
-  separate reviewers default to GPT-6 Luna. Do not switch to a more expensive
-  model without the user's explicit choice. Claude Code and other adapters
+- Provider and model are configuration choices. The user explicitly selected
+  GPT-6 Sol for economical Codex coordination. Workers and independent reviewers
+  default to GPT-6 Luna; Sol does not perform bulk analysis or implementation.
+  Do not select another more expensive model without the user's explicit choice.
+  Claude Code and other adapters
   follow the same task contract; a provider failure never triggers a fallback.
 - A separate reviewer must approve the current commit. Merge requires the
   current commit's successful CI, local validation and original-data integrity
@@ -37,3 +39,11 @@ These rules apply to every contributor and every AI provider. Read
   Users supply original game data separately. No original DLL may be required
   by the finished Linux/Windows implementation.
 - No project code license has been selected yet. Do not add one implicitly.
+- Follow `docs/reconstruction-workflow.md` for package stages, role routing,
+  bounded execution and evidence handoffs. GitHub Issues are the canonical
+  package documentation. `automation/workflow.json` specifies planned features;
+  it does not add queue, resume or specialist dispatch to the current runner.
+- A planning request does not authorize running the planned packages. Preserve
+  `agent:ready` and maintainer-only infrastructure boundaries. A future bounded
+  family grant may authorize children only after its validator is implemented
+  and independently reviewed; a model cannot grant itself additional scope.

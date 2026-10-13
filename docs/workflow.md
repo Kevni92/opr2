@@ -4,6 +4,13 @@ opr2 ist ein unabhängiger C++20/CMake-Neuaufbau für Windows und Linux. Der
 aktuelle Bootstrap ist nicht spielbar. Diese Anleitung beschreibt den gesamten
 Beitragsablauf, nicht eine fertige Spielversion.
 
+Der [Rekonstruktionsworkflow](reconstruction-workflow.md) ergänzt diese Regeln
+um Stufen, Sol-/Luna-Rollen, begrenzte Pakete und private Übergaben. GitHub Issues
+sind die maßgebliche Paketdokumentation. Queue, Resume, Familienfreigaben und
+automatischer Spezialrollendispatch werden erst in den dort verlinkten
+Implementierungsissues ergänzt. Diese Anleitung erfindet keine neuen
+Runner-Befehle.
+
 ## Issue-Vertrag
 
 Jede Arbeit beginnt mit einem GitHub Issue, das einen abgegrenzten Umfang und
@@ -30,8 +37,12 @@ bevor sie für den Agenten freigegeben werden.
 darf; Änderungen außerhalb davon blockieren die Integration. `dependencies`
 ist eine Liste abhängiger Issue-Nummern. `requires_original_data` ist ein
 Boolean und kennzeichnet, ob lokale Originaldaten-Nachweise notwendig sind.
-`acceptance` enthält nichtleere, prüfbare Abnahmesätze. Änderungen am Vertrag
-brauchen eine explizite Versionsänderung.
+`acceptance` enthält nichtleere, prüfbare Abnahmesätze. Änderungen am Auftrag
+brauchen eine ausdrücklich dokumentierte Auftragsrevision und neue Freigabe;
+Review und Validierung des alten Auftrags gelten danach nicht als Nachweis.
+Die Schemafassung `version: 1` bleibt bestehen, solange das Schema unverändert
+ist. Routing-Metadaten stehen außerhalb des JSON; sie erweitern keine Rechte
+und werden vom bisherigen Runner noch nicht ausgewertet.
 
 ## Planen und Ausführen
 
@@ -105,6 +116,8 @@ aktuellen Commit unabhängig.
 
 Provider und Modell sind Konfiguration. Codex und Claude Code folgen demselben
 Auftragsvertrag; einfache Codex-Aufgaben verwenden standardmäßig GPT-6 Luna.
+Die ausdrücklich erlaubte native Codex-Koordinatorrolle verwendet GPT-6 Sol
+mit geringem Reasoning-Aufwand und delegiert begrenzte Fachaufgaben an Luna.
 Native `.codex/`- und `.claude/`-Adapterdateien können ergänzende
 Komfortfunktionen bereitstellen, sind aber keine alternative Autorität für
 Policies.
