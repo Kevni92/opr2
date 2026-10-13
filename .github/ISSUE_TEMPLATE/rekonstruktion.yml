@@ -1,0 +1,55 @@
+name: Begrenztes Rekonstruktionspaket
+description: Eine Analysefrage, ein Verhaltensvertrag oder eine Implementierung mit passender Luna-Rolle
+labels: ["type:task", "complexity:small"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Genau eine Aufgabe pro Paket. Lies docs/reconstruction-workflow.md. Keine Rohdaten, Originalpfade, Decompilate oder Adresslisten veröffentlichen. Ein Maintainer erteilt die Ausführungsfreigabe separat.
+  - type: textarea
+    id: objective
+    attributes:
+      label: Aufgabe und Ergebnis
+      description: Ein konkretes Ergebnis; eingeschlossenen Umfang und ausgeschlossene Nachbaraufgaben nennen.
+    validations:
+      required: true
+  - type: textarea
+    id: routing
+    attributes:
+      label: Routing
+      description: Genau eine bekannte Rolle und Stufe wählen. Für geschützte Infrastruktur die Maintainer-Vorlage verwenden.
+      placeholder: |
+        | Feld | Wert |
+        |---|---|
+        | Stage | specify |
+        | Role | opr2_specifier |
+        | Lane | worker |
+        | Parent | #9 |
+        | Package | resources-header-read |
+        | Budget | ein Verhaltensvertrag; höchstens zwölf gezielte Abfragen |
+    validations:
+      required: true
+  - type: textarea
+    id: contract
+    attributes:
+      label: Task-Vertrag
+      description: Genau ein JSON-Vertrag, Schema version 1. Bei REA capabilities rea und requires_original_data true setzen. Keine Routing-Felder im Vertrag.
+      render: json
+      placeholder: |
+        {
+          "version": 1,
+          "complexity": "small",
+          "allowed_paths": ["docs/contracts/example-operation.md"],
+          "dependencies": [],
+          "requires_original_data": false,
+          "acceptance": ["Eingaben, Ergebnisse, Zustandsänderungen und negative synthetische Fälle sind aus bestätigten Befunden nachvollziehbar spezifiziert."]
+        }
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Bestätigte Grundlage und offene Fragen
+      description: Nur unabhängig formulierte Erkenntnisse und öffentliche Vertragslinks. Private Eingaben injiziert der Koordinator lokal. Unzureichende Evidenz blockiert eine Implementierungsfreigabe.
+    validations:
+      required: true

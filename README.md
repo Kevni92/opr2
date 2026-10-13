@@ -19,6 +19,14 @@ Einstiegspunkte. Die [Teilnahmeanleitung](CONTRIBUTING.md) erklärt die Einricht
 Analysen verwenden [REA MCP mit Ghidra](docs/rea-workflow.md).
 Die nächsten Schritte stehen in der [Roadmap](docs/roadmap.md).
 
+Der [Rekonstruktionsworkflow](docs/reconstruction-workflow.md) definiert
+begrenzte Pakete vom Funktionsinventar bis zum geprüften C++20-Vertrag.
+GPT-6 Sol koordiniert; spezialisierte GPT-6-Luna-Agenten bearbeiten und prüfen
+die Pakete. Die konkreten Aufträge stehen in
+[GitHub Issue #22 und seinen Folgeissues](https://github.com/Kevni92/opr2/issues/22).
+Die bestehende Automation verarbeitet einzelne Issues. Queue, Wiederaufnahme
+und automatischer Rollendispatch sind spezifizierte Luna-Folgeaufgaben.
+
 ## Originaldaten
 
 Die frische GOG-Installation von Port Royale 2 liegt im Repository unter

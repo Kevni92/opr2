@@ -73,9 +73,17 @@ python tools/orchestrator.py plan --issue N --config local/orchestrator.json
 python tools/orchestrator.py run --issue N --config local/orchestrator.json --provider claude --model sonnet --review-provider codex --review-model gpt-6-luna
 ```
 
-Codex verwendet standardmäßig Luna für Koordination, Worker und den separaten
-Reviewer. Der Runner ist ein Python-Programm; es läuft kein zusätzliches
-teures Koordinatormodell. Größere Modelle werden nur ausdrücklich ausgewählt.
+Die ausdrücklich ausgewählte Codex-Koordinatorrolle verwendet GPT-6 Sol mit
+geringem Reasoning-Aufwand. Worker und der separate Reviewer verwenden GPT-6
+Luna. Der deterministische Runner ist ein Python-Programm und benötigt kein
+zusätzliches Koordinatormodell. Die Rollen und ihre Übergaben stehen im
+[Rekonstruktionsworkflow](docs/reconstruction-workflow.md). Andere teurere
+Modelle werden nur ausdrücklich ausgewählt.
+
+Die neue Konfiguration spezifiziert Queue, Wiederaufnahme und Spezialrollen.
+Ihre ausführbare Einbindung wird in den GitHub-Folgeissues umgesetzt; bis dahin
+sind ausschließlich die bestehenden Befehle `plan` und `run` verfügbar. Die
+Einrichtung hat keine neuen Arbeitspakete auf `agent:ready` gesetzt.
 
 Der Codex-Adapter benötigt eine CLI mit benannten Berechtigungsprofilen. Er
 setzt für Worker `:workspace`, für Reviewer `:read-only` und übernimmt kein
